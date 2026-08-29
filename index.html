@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>純前端 IG 直連下單系統</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #fafafa; }
+        .product-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .btn { background: #0095f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        .btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); width: 100%; padding: 12px; font-size: 16px; font-weight: bold; margin-top: 15px; }
+        .cart-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>精選商品</h2>
+    
+    <div class="product-card">
+        <h3>經典手作手提包</h3>
+        <p>單價：NT$ 1,200</p>
+        <button class="btn" onclick="addToCart('經典手作手提包', 1200)">加入購物車</button>
+    </div>
+
+    <div class="product-card">
+        <h3>極簡質感馬克杯</h3>
+        <p>單價：NT$ 350</p>
+        <button class="btn" onclick="addToCart('極簡質感馬克杯', 350)">加入購物車</button>
+    </div>
+
+    <!-- 購物車檢視與 IG 結帳 -->
+    <div class="cart-box">
+        <h2>購物車清單</h2>
+        <ul id="cart-list"></ul>
+        <p><strong>預估總金額：NT$ <span id="cart-total">0</span></strong></p>
+        
+        <button class="btn btn-ig" onclick="checkoutViaIG()">📱 前往 IG 送出訂單</button>
+        <button style="margin-top:10px; background:none; border:none; color:#888; cursor:pointer;" onclick="clearCart()">清空購物車</button>
+    </div>
+
+    <script>
+        // 設定你的官方 IG 帳號 (請修改成你自己的 IG 帳號，不要加 @)
+        const IG_USERNAME = "your_ig_handle";
+
+        function getCart() {
+            return JSON.parse(localStorage.getItem("ig_cart")) || [];
+        }
+
+        function addToCart(name, price) {
+            let cart = getCart();
+            let item = cart.find(i => i.name === name);
+            if (item) {
+                item.qty += 1;
+            } else {
+                cart.push({ name, price, qty: 1 });
+            }
+            localStorage.setItem("ig_cart", JSON.stringify(cart));
+            renderCart();
+        }
+
+        function renderCart() {
+            let cart = getCart();
+            let cartList = document.getElementById("cart-list");
+            let cartTotal = document.getElementById("cart-total");
+            cartList.innerHTML = "";
+            let total = 0;
+
+            if(cart.length === 0) {
+                cartList.innerHTML = "<li>購物車是空的</li>";
+            }
+
+            cart.forEach(item => {
+                total += item.price * item.qty;
+                let li = document.createElement("li");
+                li.textContent = `${item.name} x ${item.qty} (NT$ ${item.price * item.qty})`;
+                cartList.appendChild(li);
+            });
+
+            cartTotal.textContent = total;
+        }
+
+        function checkoutViaIG() {
+            let cart = getCart();
+            if (cart.length === 0) {
+                alert("購物車是空的，請先挑選商品！");
+                return;
+            }
+
+            // 1. 整理購物車明細為文字
+            let orderDetails = "你好！我想下單以下商品：\n\n";
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                let itemTotal = item.price * item.qty;
+                total += itemTotal;
+                orderDetails += `${index + 1}. ${item.name} x ${item.qty} = NT$ ${itemTotal}\n`;
+            });
+
+            orderDetails += `\n【總金額】：NT$ ${total}\n`;
+            orderDetails += `---\n（請複製此訊息發送，我們將盡快與您確認寄送資訊）`;
+
+            // 2. 將文字進行 URL 編碼
+            let encodedText = encodeURIComponent(orderDetails);
+
+            // 3. 嘗試以 Deep Link 開啟 IG App 或網頁版私訊
+            // 由於 IG 的 Direct Message 網頁與 App 連結格式：
+            let igUrl = `https://www.instagram.com/direct/t/${IG_USERNAME}/`;
+
+            // 先將訂單內容複製到剪貼簿，確保顧客點擊後不會遺失訊息
+            navigator.clipboard.writeText(orderDetails).then(() => {
+                alert("訂單資訊已複製到剪貼簿！即將帶您前往 IG 私訊頁面，請貼上訊息即可下單。");
+                window.open(igUrl, '_blank');
+            }).catch(() => {
+                // 若剪貼簿功能失敗直接跳轉
+                window.open(igUrl, '_blank');
+            });
+        }
+
+        function clearCart() {
+            localStorage.removeItem("ig_cart");
+            renderCart();
+        }
+
+        // 初始化
+        document.addEventListener("DOMContentLoaded", renderCart);
+    </script>
+</body>
+</html>
