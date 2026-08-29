@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>純前端 IG 直連下單系統</title>
+    <title>紅蔥醬</title>
     <style>
         body { font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #fafafa; }
         .product-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
@@ -34,13 +34,13 @@
         <ul id="cart-list"></ul>
         <p><strong>預估總金額：NT$ <span id="cart-total">0</span></strong></p>
         
-        <button class="btn btn-ig" onclick="checkoutViaIG()">📱 前往 IG 送出訂單</button>
+        <button class="btn btn-ig" onclick="checkoutViaIG()">前往 IG 送出訂單</button>
         <button style="margin-top:10px; background:none; border:none; color:#888; cursor:pointer;" onclick="clearCart()">清空購物車</button>
     </div>
 
     <script>
         // 設定你的官方 IG 帳號 (請修改成你自己的 IG 帳號，不要加 @)
-        const IG_USERNAME = "your_ig_handle";
+        const IG_USERNAME = "shallot.sauce";
 
         function getCart() {
             return JSON.parse(localStorage.getItem("ig_cart")) || [];
